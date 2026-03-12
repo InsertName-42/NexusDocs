@@ -18,7 +18,7 @@ var finalConn = $"{baseConn};userid={user};password={pass};";
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySQL(finalConn));
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
@@ -64,5 +64,14 @@ app.MapControllerRoute(
 
 app.MapRazorPages()
    .WithStaticAssets();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApplicationDbContext>();
+
+    await context.Database.EnsureCreatedAsync();
+    await SeedData.Seed(context, services);
+}
 
 app.Run();
