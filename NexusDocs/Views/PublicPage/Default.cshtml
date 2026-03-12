@@ -1,0 +1,25 @@
+﻿@model NexusDocs.Models.PublicPageViewModel
+
+<article class="page-content">
+    <h1>@Model.PageTitle</h1>
+    <hr />
+
+    @* Raw is used because Google Docs content will be provided as HTML/Markdown string *@
+    <div class="doc-body">
+        @Html.Raw(Model.Content)
+    </div>
+</article>
+
+@if (Model.Interactions.Any())
+{
+    <section class="interactions mt-5">
+        <h4>Page Actions</h4>
+        @foreach (var interaction in Model.Interactions)
+        {
+            <div class="interaction-item" data-key="@interaction.ElementKey">
+                @* Logic to render Toggle, Rating, etc. based on InteractionType *@
+                <span>@interaction.InteractionType: @interaction.Value</span>
+            </div>
+        }
+    </section>
+}

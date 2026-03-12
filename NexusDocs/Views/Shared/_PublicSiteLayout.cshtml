@@ -1,0 +1,51 @@
+﻿@model NexusDocs.Models.PublicPageViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@Model.PageTitle - @Model.SiteTitle</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    @if (!string.IsNullOrEmpty(Model.CustomStyles))
+    {
+        <style>@Html.Raw(Model.CustomStyles)</style>
+    }
+</head>
+<body class="@Model.GlobalTheme">
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" href="/">@Model.SiteTitle</a>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        @foreach (var nav in Model.Navigation)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(nav.IsActive ? "active font-weight-bold" : "")"
+                                   href="/@ViewContext.RouteData.Values["userKey"]/@nav.Slug">
+                                    @nav.Title
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    @**@
+    @foreach (var scriptPath in Model.ScriptPaths)
+    {
+        <script src="@scriptPath"></script>
+    }
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
