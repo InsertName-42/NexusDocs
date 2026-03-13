@@ -22,6 +22,7 @@ public class PageManagementController : Controller
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         var site = await _context.Sites
+            .Include(s => s.User)
             .Include(s => s.Pages)
             .FirstOrDefaultAsync(s => s.SiteEntityId == siteId && s.UserId == userId);
 
@@ -39,37 +40,26 @@ public class PageManagementController : Controller
             PageTitle = "",
             Slug = ""
         });
-}
+    }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(SiteEntity site)
+    public async Task<IActionResult> Create(PageEntity page)
     {
-        //Manually assign the owner's ID
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        site.UserId = userId;
-
-        //Remove validation for properties not in the form
-        ModelState.Remove("User");
-        ModelState.Remove("Pages");
-        ModelState.Remove("UserId");
+        ModelState.Remove("Site");
+        ModelState.Remove("Template");
+        ModelState.Remove("Interactions");
+        ModelState.Remove("Tags");
 
         if (ModelState.IsValid)
         {
-            _context.Add(site);
+            _context.Add(page);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            return RedirectToAction(nameof(Index), new { siteId = page.SiteId });
         }
 
-        //Debugging
-        foreach (var modelState in ModelState.Values)
-        {
-            foreach (var error in modelState.Errors)
-            {
-                System.Diagnostics.Debug.WriteLine($"Validation Error: {error.ErrorMessage}");
-            }
-        }
-
-        return View(site);
+        return View(page);
     }
+
 }

@@ -54,9 +54,16 @@ namespace NexusDocs.Controllers
                         await _context.SaveChangesAsync();
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    //Log error or handle cases where Google API is unreachable
+                    System.Diagnostics.Debug.WriteLine($"Google Sync Error: {ex.Message}");
+
+                    ViewBag.SyncError = "Unable to sync with Google Docs. Please check permissions.";
+
+                    if (ex.Message.Contains("403"))
+                    {
+                        ViewBag.SyncError = "Access Denied: Ensure the Google Doc is shared as 'Anyone with the link can view'.";
+                    }
                 }
             }
 

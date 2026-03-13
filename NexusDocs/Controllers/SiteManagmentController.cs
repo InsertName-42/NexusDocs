@@ -29,6 +29,14 @@ namespace NexusDocs.Controllers
         {
             // 1. Get the ID from the current login cookie
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _context.Users.FindAsync(userId);
+
+            if (user != null && string.IsNullOrEmpty(user.UserKey))
+            {
+                // Default the UserKey to the first part of their email
+                user.UserKey = user.UserName.Split('@')[0];
+                _context.Update(user);
+            }
 
             // 2. Double check that this user actually exists in the DB
             var userExists = await _context.Users.AnyAsync(u => u.Id == userId);

@@ -1,13 +1,27 @@
 ﻿@model NexusDocs.Models.PublicPageViewModel
 
 <article class="page-content">
+    @if (ViewBag.SyncError != null)
+    {
+        <div class="alert alert-warning">
+            @ViewBag.SyncError
+        </div>
+    }
+
+<article class="page-content">
     <h1>@Model.PageTitle</h1>
     <hr />
 
-    @* Raw is used because Google Docs content will be provided as HTML/Markdown string *@
     <div class="doc-body">
-        @Html.Raw(Model.Content)
-    </div>
+        @if (string.IsNullOrEmpty(Model.Content))
+            {
+                <p class="text-muted"><em>No content found. Please refresh to try syncing again.</em></p>
+            }
+            else
+            {
+                @Html.Raw(Model.Content)
+            }
+        </div>
 </article>
 
 @if (Model.Interactions.Any())
@@ -17,7 +31,6 @@
         @foreach (var interaction in Model.Interactions)
         {
             <div class="interaction-item" data-key="@interaction.ElementKey">
-                @* Logic to render Toggle, Rating, etc. based on InteractionType *@
                 <span>@interaction.InteractionType: @interaction.Value</span>
             </div>
         }

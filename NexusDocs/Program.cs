@@ -37,11 +37,19 @@ builder.Services.AddAuthentication(options =>
 {
     options.ClientId = builder.Configuration["Google:ClientId"]!;
     options.ClientSecret = builder.Configuration["Google:ClientSecret"]!;
+
+    options.SaveTokens = true;
+
     options.Scope.Add(DriveService.Scope.DriveFile);
     options.Scope.Add(DriveService.Scope.DriveReadonly);
+    options.Scope.Add("https://www.googleapis.com/auth/drive.readonly");
     options.SaveTokens = true;
+    options.Events.OnRedirectToAuthorizationEndpoint = context =>
+    {
+        context.Response.Redirect(context.RedirectUri + "&prompt=consent");
+        return Task.CompletedTask;
+    };
 })
-// Required to register IGoogleAuthProvider for the GoogleSyncService
 .AddGoogleOpenIdConnect(options =>
 {
     options.ClientId = builder.Configuration["Google:ClientId"]!;
@@ -49,8 +57,6 @@ builder.Services.AddAuthentication(options =>
 });
 
 // 3. Custom Services
-// We no longer register DriveService here to avoid the Task.Run deadlock.
-// GoogleSyncService now handles its own internal DriveService creation.
 builder.Services.AddScoped<GoogleSyncService>();
 
 builder.Services.AddControllersWithViews();
@@ -77,10 +83,6 @@ app.UseAuthorization();
 app.MapStaticAssets();
 
 // 5. Routing
-app.MapControllerRoute(
-    name: "dashboard",
-    pattern: "dashboard/{controller=Home}/{action=Index}/{id?}");
-
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
