@@ -1,15 +1,10 @@
 using Google.Apis.Auth.AspNetCore3;
 using Google.Apis.Drive.v3;
-using Google.Apis.Services;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using NexusDocs.Data;
 using NexusDocs.Models;
 using NexusDocs.Services;
-using Pomelo.EntityFrameworkCore.MySql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,27 +41,17 @@ builder.Services.AddAuthentication(options =>
     options.Scope.Add(DriveService.Scope.DriveReadonly);
     options.SaveTokens = true;
 })
+// Required to register IGoogleAuthProvider for the GoogleSyncService
 .AddGoogleOpenIdConnect(options =>
 {
     options.ClientId = builder.Configuration["Google:ClientId"]!;
     options.ClientSecret = builder.Configuration["Google:ClientSecret"]!;
 });
 
-// 3. Google API & Custom Services
+// 3. Custom Services
+// We no longer register DriveService here to avoid the Task.Run deadlock.
+// GoogleSyncService now handles its own internal DriveService creation.
 builder.Services.AddScoped<GoogleSyncService>();
-
-builder.Services.AddScoped(sp =>
-{
-    var auth = sp.GetRequiredService<IGoogleAuthProvider>();
-
-    var credential = Task.Run(() => auth.GetCredentialAsync()).GetAwaiter().GetResult();
-
-    return new DriveService(new BaseClientService.Initializer
-    {
-        HttpClientInitializer = credential,
-        ApplicationName = "NexusDocs"
-    });
-});
 
 builder.Services.AddControllersWithViews();
 
@@ -112,4 +97,20 @@ app.MapControllerRoute(
 
 app.MapRazorPages();
 
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        // Call the Seed method you defined in SeedData.cs
+        await SeedData.Seed(context, services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
+    }
+}
 app.Run();

@@ -12,7 +12,7 @@ public class SeedData
     {
         var userManager = provider.GetRequiredService<UserManager<AppUser>>();
 
-        if (context.Pages.Any()) return;
+        if(await context.Pages.AnyAsync(p => p.Slug == "prologue")) { return; }
 
         const string SECRET_PASSWORD = "Password123!";
         const string SEED_EMAIL = "ace@example.com";

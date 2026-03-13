@@ -1,5 +1,7 @@
 ﻿using Google;
+using Google.Apis.Auth.AspNetCore3;
 using Google.Apis.Drive.v3;
+using Google.Apis.Services;
 using Markdig;
 using System.Net;
 using System.Net.Http.Headers;
@@ -8,19 +10,26 @@ namespace NexusDocs.Services;
 
 public class GoogleSyncService
 {
-    private readonly DriveService _driveService;
+    private readonly IGoogleAuthProvider _auth;
 
-    public GoogleSyncService(DriveService driveService)
+    public GoogleSyncService(IGoogleAuthProvider auth)
     {
-        _driveService = driveService;
+        _auth = auth;
     }
 
     public async Task<(string? content, string? newEtag)> SyncPageAsync(string docId, string? currentEtag, bool useMarkdown)
     {
+        var credential = await _auth.GetCredentialAsync();
+        var driveService = new DriveService(new BaseClientService.Initializer
+        {
+            HttpClientInitializer = credential,
+            ApplicationName = "NexusDocs"
+        });
+
         // 1. Determine the export format based on user tags
         string mimeType = useMarkdown ? "text/markdown" : "text/html";
 
-        var request = _driveService.Files.Export(docId, mimeType);
+        var request = driveService.Files.Export(docId, mimeType);
 
         // 2. Add the ETag for conditional loading
         if (!string.IsNullOrEmpty(currentEtag))
@@ -44,7 +53,7 @@ public class GoogleSyncService
 
                 // 4. Capture the new ETag from the response
                 // Note: The Google .NET client often exposes the ETag on the metadata object
-                var metadata = await _driveService.Files.Get(docId).ExecuteAsync();
+                var metadata = await driveService.Files.Get(docId).ExecuteAsync();
 
                 return (finalHtml, metadata.ETag);
             }
