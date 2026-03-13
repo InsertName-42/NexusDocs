@@ -8,7 +8,7 @@ namespace NexusDocs.Models
         public int SiteId { get; set; }
         [ForeignKey("SiteId")]
         public virtual SiteEntity? Site { get; set; }
-        public int TemplateId { get; set; }
+        public int? TemplateId { get; set; }
         [ForeignKey("TemplateId")]
         public virtual TemplateEntity? Template { get; set; }
         public virtual ICollection<TagEntity> Tags { get; set; } = new List<TagEntity>();

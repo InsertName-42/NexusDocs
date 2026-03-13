@@ -1,0 +1,33 @@
+﻿@model NexusDocs.Models.SiteEntity
+
+@{
+    ViewData["Title"] = "Create New Site";
+}
+
+<h1>Create Your Site</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div class="form-group mb-3">
+                <label asp-for="SiteTitle" class="control-label">Site Name</label>
+                <input asp-for="SiteTitle" class="form-control" placeholder="e.g. The Vale Chronicles" />
+                <span asp-validation-for="SiteTitle" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="GlobalTheme" class="control-label">Theme</label>
+                <select asp-for="GlobalTheme" class="form-control">
+                    <option value="Light">Light</option>
+                    <option value="Dark">Dark</option>
+                    <option value="Sepia">Sepia</option>
+                </select>
+            </div>
+
+            <div class="form-group mt-4">
+                <button type="submit" class="btn btn-primary">Create Site</button>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

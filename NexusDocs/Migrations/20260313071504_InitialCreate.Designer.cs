@@ -12,7 +12,7 @@ using NexusDocs.Data;
 namespace NexusDocs.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260313053902_InitialCreate")]
+    [Migration("20260313071504_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -177,7 +177,6 @@ namespace NexusDocs.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
 
@@ -269,7 +268,7 @@ namespace NexusDocs.Migrations
                     b.Property<int?>("SortOrder")
                         .HasColumnType("int");
 
-                    b.Property<int>("TemplateId")
+                    b.Property<int?>("TemplateId")
                         .HasColumnType("int");
 
                     b.HasKey("PageEntityId");
@@ -470,9 +469,7 @@ namespace NexusDocs.Migrations
 
                     b.HasOne("NexusDocs.Models.TemplateEntity", "Template")
                         .WithMany()
-                        .HasForeignKey("TemplateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TemplateId");
 
                     b.Navigation("Site");
 

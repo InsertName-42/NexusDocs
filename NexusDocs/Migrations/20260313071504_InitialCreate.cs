@@ -40,8 +40,6 @@ namespace NexusDocs.Migrations
                 {
                     Id = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Email = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
                     GoogleAuthToken = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     UserKey = table.Column<string>(type: "longtext", nullable: true)
@@ -50,6 +48,8 @@ namespace NexusDocs.Migrations
                     UserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     NormalizedUserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Email = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     NormalizedEmail = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -273,7 +273,7 @@ namespace NexusDocs.Migrations
                     PageEntityId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     SiteId = table.Column<int>(type: "int", nullable: false),
-                    TemplateId = table.Column<int>(type: "int", nullable: false),
+                    TemplateId = table.Column<int>(type: "int", nullable: true),
                     PageTitle = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Slug = table.Column<string>(type: "varchar(255)", nullable: false)
@@ -300,8 +300,7 @@ namespace NexusDocs.Migrations
                         name: "FK_Pages_Templates_TemplateId",
                         column: x => x.TemplateId,
                         principalTable: "Templates",
-                        principalColumn: "TemplateEntityId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "TemplateEntityId");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 

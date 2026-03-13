@@ -1,0 +1,38 @@
+﻿@model NexusDocs.Models.SiteEntity
+@{
+    ViewData["Title"] = "Manage Pages";
+    var userKey = Model.User?.UserKey ?? "unknown";
+}
+
+<h2>Managing Pages for: @Model.SiteTitle</h2>
+
+<p>
+    <a asp-action="Create" asp-route-siteId="@Model.SiteEntityId" class="btn btn-success">
+        + Add New Page (Link Google Doc)
+    </a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Slug</th>
+            <th>Google Doc ID</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sitePage in Model.Pages.OrderBy(p => p.SortOrder))
+        {
+            <tr>
+                <td>@sitePage.PageTitle</td>
+                <td><code>/@userKey/@sitePage.Slug</code></td>
+                <td><small class="text-muted">@sitePage.GoogleDocId</small></td>
+                <td>
+                    <a href="/@userKey/@sitePage.Slug" target="_blank" class="btn btn-sm btn-outline-primary">View</a>
+                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
