@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NexusDocs.Data;
@@ -11,7 +12,7 @@ using NexusDocs.Data;
 namespace NexusDocs.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260312131252_InitialCreate")]
+    [Migration("20260313053902_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -19,8 +20,10 @@ namespace NexusDocs.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.4")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -54,6 +57,8 @@ namespace NexusDocs.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("ClaimType")
                         .HasColumnType("longtext");
 
@@ -76,6 +81,8 @@ namespace NexusDocs.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("longtext");
@@ -184,7 +191,7 @@ namespace NexusDocs.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -234,16 +241,18 @@ namespace NexusDocs.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("CachedContent")
-                        .HasColumnType("longtext");
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("PageEntityId"));
 
-                    b.Property<string>("ETag")
+                    b.Property<string>("CachedContent")
                         .HasColumnType("longtext");
 
                     b.Property<string>("GoogleDocId")
                         .HasColumnType("longtext");
 
-                    b.Property<DateTime>("LastSynced")
+                    b.Property<string>("LastETag")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("LastSynced")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("PageTitle")
@@ -257,7 +266,7 @@ namespace NexusDocs.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.Property<int>("SortOrder")
+                    b.Property<int?>("SortOrder")
                         .HasColumnType("int");
 
                     b.Property<int>("TemplateId")
@@ -278,6 +287,8 @@ namespace NexusDocs.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ElementKey")
                         .IsRequired()
@@ -309,6 +320,8 @@ namespace NexusDocs.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("SiteEntityId"));
+
                     b.Property<string>("GlobalTheme")
                         .HasColumnType("longtext");
 
@@ -339,6 +352,8 @@ namespace NexusDocs.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<bool>("IsEnabled")
                         .HasColumnType("tinyint(1)");
 
@@ -360,6 +375,8 @@ namespace NexusDocs.Migrations
                     b.Property<int>("TemplateEntityId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("TemplateEntityId"));
 
                     b.Property<string>("DefaultStyles")
                         .HasColumnType("longtext");

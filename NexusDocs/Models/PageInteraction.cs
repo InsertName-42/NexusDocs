@@ -1,5 +1,4 @@
-﻿using Mono.TextTemplating;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace NexusDocs.Models
 {
