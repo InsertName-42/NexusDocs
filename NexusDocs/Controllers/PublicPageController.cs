@@ -36,7 +36,6 @@ namespace NexusDocs.Controllers
 
                 try
                 {
-                    // page.LastETag now holds our version string
                     var (newContent, newVersion) = await _syncService.SyncPageAsync(page.GoogleDocId, page.LastETag, isMarkdown);
 
                     if (newContent != null)
@@ -57,6 +56,22 @@ namespace NexusDocs.Controllers
                 }
             }
 
+            var hasMarkdown = page.Tags.Any(t => t.Name == "Markdown");
+            //Check if the tag is actually being detected
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Page '{slug}' has Markdown tag: {hasMarkdown}");
+
+            if (hasMarkdown && !string.IsNullOrEmpty(page.CachedContent))
+            {
+                string rawMarkdown = System.Text.RegularExpressions.Regex.Replace(page.CachedContent, "<.*?>", string.Empty);
+                rawMarkdown = System.Net.WebUtility.HtmlDecode(rawMarkdown);
+                page.CachedContent = Markdig.Markdown.ToHtml(rawMarkdown);
+                System.Diagnostics.Debug.WriteLine("[DEBUG] Markdown conversion successful.");
+            }
+            if (hasMarkdown && !string.IsNullOrEmpty(page.CachedContent))
+            {
+                //Convert the Markdown from the Google Doc into HTML
+                page.CachedContent = Markdig.Markdown.ToHtml(page.CachedContent);
+            }
             //3. Navigation mapping
             var navPages = await _context.Pages
                 .Where(p => p.SiteId == page.SiteId)

@@ -12,7 +12,25 @@ public class SeedData
     {
         var userManager = provider.GetRequiredService<UserManager<AppUser>>();
 
-        if(await context.Pages.AnyAsync(p => p.Slug == "prologue")) { return; }
+        //Seed tags
+        if (!context.Tags.Any())
+        {
+            context.Tags.AddRange(
+                new TagEntity
+                {
+                    Name = "Markdown",
+                    IsEnabled = true
+                },
+                new TagEntity
+                {
+                    Name = "Downloadable",
+                    IsEnabled = true,
+                    ScriptPath = "Downloadable"
+                }
+            );
+            await context.SaveChangesAsync();
+        }
+            if (await context.Pages.AnyAsync(p => p.Slug == "prologue")) { return; }
 
         const string SECRET_PASSWORD = "Password123!";
         const string SEED_EMAIL = "ace@example.com";

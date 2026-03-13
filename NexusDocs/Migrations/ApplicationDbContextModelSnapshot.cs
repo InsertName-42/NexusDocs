@@ -358,7 +358,6 @@ namespace NexusDocs.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("ScriptPath")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");

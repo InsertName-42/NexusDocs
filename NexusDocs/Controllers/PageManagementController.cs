@@ -32,8 +32,9 @@ public class PageManagementController : Controller
     }
 
     [HttpGet]
-    public IActionResult Create(int siteId)
+    public async Task<IActionResult> Create(int siteId)
     {
+        ViewBag.AvailableTags = await _context.Tags.ToListAsync();
         return View(new PageEntity
         {
             SiteId = siteId,
@@ -44,15 +45,28 @@ public class PageManagementController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(PageEntity page)
+    public async Task<IActionResult> Create(PageEntity page, int[] selectedTagIds)
     {
         ModelState.Remove("Site");
         ModelState.Remove("Template");
         ModelState.Remove("Interactions");
         ModelState.Remove("Tags");
 
+        if (!string.IsNullOrEmpty(page.GoogleDocId))
+        {
+            page.GoogleDocId = ExtractDocId(page.GoogleDocId);
+        }
+
         if (ModelState.IsValid)
         {
+            if (selectedTagIds != null)
+            {
+                foreach (var id in selectedTagIds)
+                {
+                    var tag = await _context.Tags.FindAsync(id);
+                    if (tag != null) page.Tags.Add(tag);
+                }
+            }
             _context.Add(page);
             await _context.SaveChangesAsync();
 
@@ -61,5 +75,18 @@ public class PageManagementController : Controller
 
         return View(page);
     }
+    private string? ExtractDocId(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return null;
 
+        var match = System.Text.RegularExpressions.Regex.Match(input, @"/d/(.+?)(/|$)");
+
+        if (match.Success)
+        {
+            return match.Groups[1].Value;
+        }
+
+        return input.Trim();
+    }
 }
+

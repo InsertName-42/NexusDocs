@@ -12,7 +12,7 @@ using NexusDocs.Data;
 namespace NexusDocs.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260313104706_InitialCreate")]
+    [Migration("20260313213942_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -361,7 +361,6 @@ namespace NexusDocs.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("ScriptPath")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");

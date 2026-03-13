@@ -82,7 +82,7 @@ namespace NexusDocs.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    ScriptPath = table.Column<string>(type: "longtext", nullable: false)
+                    ScriptPath = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     IsEnabled = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
