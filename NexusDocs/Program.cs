@@ -8,15 +8,13 @@ using NexusDocs.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Database Configuration 
+//1. Database Configuration 
 var baseConn = builder.Configuration.GetConnectionString("MySqlConnection")
     ?? throw new InvalidOperationException("Connection string 'MySqlConnection' not found.");
 
 var user = builder.Configuration["ProdDbUser"] ?? builder.Configuration["DbUser"];
 var pass = builder.Configuration["ProdDbPassword"] ?? builder.Configuration["DbPassword"];
-
 var finalConn = $"{baseConn};userid={user};password={pass};";
-
 var serverVersion = ServerVersion.AutoDetect(finalConn);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -24,7 +22,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-// 2. Identity & Authentication 
+//2. Identity & Authentication 
 builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -38,32 +36,26 @@ builder.Services.AddAuthentication(options =>
     options.ClientId = builder.Configuration["Google:ClientId"]!;
     options.ClientSecret = builder.Configuration["Google:ClientSecret"]!;
 
+    //Scope required for the admin to interact with their Google Drive
+    options.Scope.Add(DriveService.Scope.DriveReadonly);
     options.SaveTokens = true;
 
-    options.Scope.Add(DriveService.Scope.DriveFile);
-    options.Scope.Add(DriveService.Scope.DriveReadonly);
-    options.Scope.Add("https://www.googleapis.com/auth/drive.readonly");
-    options.SaveTokens = true;
     options.Events.OnRedirectToAuthorizationEndpoint = context =>
     {
+        //Forces the consent screen to ensure refresh tokens are provided
         context.Response.Redirect(context.RedirectUri + "&prompt=consent");
         return Task.CompletedTask;
     };
-})
-.AddGoogleOpenIdConnect(options =>
-{
-    options.ClientId = builder.Configuration["Google:ClientId"]!;
-    options.ClientSecret = builder.Configuration["Google:ClientSecret"]!;
 });
 
-// 3. Custom Services
+//3. Custom Services
 builder.Services.AddScoped<GoogleSyncService>();
 
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// 4. HTTP Request Pipeline
+//4. HTTP Request Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -82,11 +74,12 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
-// 5. Routing
+//5. Routing
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+//Routing for public pages based on userKey and slug
 app.MapControllerRoute(
     name: "public_site_home",
     pattern: "{userKey}",
@@ -99,14 +92,13 @@ app.MapControllerRoute(
 
 app.MapRazorPages();
 
-
+//6. Seed database
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        // Call the Seed method you defined in SeedData.cs
         await SeedData.Seed(context, services);
     }
     catch (Exception ex)
@@ -115,4 +107,5 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
+
 app.Run();

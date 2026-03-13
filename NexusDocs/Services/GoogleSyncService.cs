@@ -1,67 +1,73 @@
-﻿using Google;
-using Google.Apis.Auth.AspNetCore3;
-using Google.Apis.Drive.v3;
+﻿using Google.Apis.Drive.v3;
 using Google.Apis.Services;
-using Markdig;
 using System.Net;
-using System.Net.Http.Headers;
 
-namespace NexusDocs.Services;
-
-public class GoogleSyncService
+namespace NexusDocs.Services
 {
-    private readonly IGoogleAuthProvider _auth;
-
-    public GoogleSyncService(IGoogleAuthProvider auth)
+    public class GoogleSyncService
     {
-        _auth = auth;
-    }
+        private readonly IConfiguration _config;
 
-    public async Task<(string? content, string? newEtag)> SyncPageAsync(string docId, string? currentEtag, bool useMarkdown)
-    {
-        var credential = await _auth.GetCredentialAsync();
-        var driveService = new DriveService(new BaseClientService.Initializer
+        public GoogleSyncService(IConfiguration config)
         {
-            HttpClientInitializer = credential,
-            ApplicationName = "NexusDocs"
-        });
-
-        // 1. Determine the export format based on user tags
-        string mimeType = useMarkdown ? "text/markdown" : "text/html";
-
-        var request = driveService.Files.Export(docId, mimeType);
-
-        // 2. Add the ETag for conditional loading
-        if (!string.IsNullOrEmpty(currentEtag))
-        {
-            request.ModifyRequest = (httpRequest) =>
-            {
-                // Google ETags are usually wrapped in quotes
-                httpRequest.Headers.IfNoneMatch.Add(new EntityTagHeaderValue($"\"{currentEtag.Trim('"')}\""));
-            };
+            _config = config;
         }
 
-        try
+        public async Task<(string? content, string? etag)> SyncPageAsync(string fileId, string? currentVersion, bool isMarkdown)
         {
-            using (var responseStream = await request.ExecuteAsStreamAsync())
-            using (var reader = new StreamReader(responseStream))
+            fileId = fileId.Trim();
+            var apiKey = _config["Google:ApiKey"];
+
+            var service = new DriveService(new BaseClientService.Initializer()
             {
-                string rawContent = await reader.ReadToEndAsync();
+                ApiKey = apiKey,
+                ApplicationName = "NexusDocs"
+            });
 
-                // 3. Process content if it's Markdown
-                string finalHtml = useMarkdown ? Markdown.ToHtml(rawContent) : rawContent;
+            try
+            {
+                //1. Request the 'version' field specifically
+                var getRequest = service.Files.Get(fileId);
+                getRequest.Fields = "version";
+                var fileMetadata = await getRequest.ExecuteAsync();
 
-                // 4. Capture the new ETag from the response
-                // Note: The Google .NET client often exposes the ETag on the metadata object
-                var metadata = await driveService.Files.Get(docId).ExecuteAsync();
+                string newVersion = fileMetadata.Version?.ToString() ?? "0";
 
-                return (finalHtml, metadata.ETag);
+                //2. Comparison Logic
+                if (newVersion == currentVersion)
+                {
+                    return (null, currentVersion);
+                }
+
+                //3. Export if versions differ
+                var exportRequest = service.Files.Export(fileId, "text/html");
+                using (var stream = new MemoryStream())
+                {
+                    await exportRequest.DownloadAsync(stream);
+                    stream.Position = 0;
+                    using (var reader = new StreamReader(stream))
+                    {
+                        string htmlContent = await reader.ReadToEndAsync();
+
+                        System.Diagnostics.Debug.WriteLine("***************************************************");
+                        System.Diagnostics.Debug.WriteLine($">>> VERSION CHANGE DETECTED: {currentVersion} -> {newVersion} <<<");
+                        System.Diagnostics.Debug.WriteLine("***************************************************");
+
+                        return (htmlContent, newVersion);
+                    }
+                }
             }
-        }
-        catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.NotModified)
-        {
-            // The document hasn't changed! Return nulls to indicate no update needed.
-            return (null, null);
+            catch (Google.GoogleApiException ex)
+            {
+                string errorMessage = ex.Error?.Errors?.FirstOrDefault()?.Message ?? ex.Message;
+
+                System.Diagnostics.Debug.WriteLine("\n***************************************************");
+                System.Diagnostics.Debug.WriteLine("!!! GOOGLE SYNC ERROR !!!");
+                System.Diagnostics.Debug.WriteLine($"REASON: {errorMessage}");
+                System.Diagnostics.Debug.WriteLine("***************************************************\n");
+
+                throw new Exception(errorMessage);
+            }
         }
     }
 }

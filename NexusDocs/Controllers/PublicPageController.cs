@@ -11,7 +11,6 @@ namespace NexusDocs.Controllers
         private readonly ApplicationDbContext _context;
         private readonly GoogleSyncService _syncService;
 
-        //Inject both the Database Context and the new Sync Service
         public PublicPageController(ApplicationDbContext context, GoogleSyncService syncService)
         {
             _context = context;
@@ -20,54 +19,45 @@ namespace NexusDocs.Controllers
 
         public async Task<IActionResult> Display(string userKey, string slug)
         {
-            //1. Fetch the page with all necessary related data
+            //1. Fetch the page
             var page = await _context.Pages
-                .Include(p => p.Site)
-                    .ThenInclude(s => s.User)
+                .Include(p => p.Site).ThenInclude(s => s.User)
                 .Include(p => p.Template)
                 .Include(p => p.Tags)
                 .Include(p => p.Interactions)
                 .FirstOrDefaultAsync(p => p.Slug == slug && p.Site.User.UserKey == userKey);
 
-            if (page == null || page.Site == null)
-            {
-                return NotFound();
-            }
+            if (page == null || page.Site == null) return NotFound();
 
             //2. Perform the Google Sync Check
             if (!string.IsNullOrEmpty(page.GoogleDocId))
             {
-                //Check if the "Markdown" tag is active for this specific page
                 bool isMarkdown = page.Tags.Any(t => t.Name == "Markdown" && t.IsEnabled);
 
                 try
                 {
-                    //SyncPageAsync returns content only if the ETag has changed
-                    var (newContent, newEtag) = await _syncService.SyncPageAsync(page.GoogleDocId, page.LastETag, isMarkdown);
+                    // page.LastETag now holds our version string
+                    var (newContent, newVersion) = await _syncService.SyncPageAsync(page.GoogleDocId, page.LastETag, isMarkdown);
 
                     if (newContent != null)
                     {
                         page.CachedContent = newContent;
-                        page.LastETag = newEtag;
+                        page.LastETag = newVersion;
                         page.LastSynced = DateTime.UtcNow;
 
+                        _context.Pages.Update(page);
                         await _context.SaveChangesAsync();
+
+                        System.Diagnostics.Debug.WriteLine($"SUCCESS: Saved version {newVersion} to DB.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Google Sync Error: {ex.Message}");
-
-                    ViewBag.SyncError = "Unable to sync with Google Docs. Please check permissions.";
-
-                    if (ex.Message.Contains("403"))
-                    {
-                        ViewBag.SyncError = "Access Denied: Ensure the Google Doc is shared as 'Anyone with the link can view'.";
-                    }
+                    ViewBag.SyncError = ex.Message;
                 }
             }
 
-            //3. Build Navigation for the sidebar/header
+            //3. Navigation mapping
             var navPages = await _context.Pages
                 .Where(p => p.SiteId == page.SiteId)
                 .OrderBy(p => p.SortOrder)
@@ -79,7 +69,7 @@ namespace NexusDocs.Controllers
                 })
                 .ToListAsync();
 
-            //4. Populate the ViewModel
+            //4. Build View Model
             var viewModel = new PublicPageViewModel
             {
                 SiteTitle = page.Site.SiteTitle,
@@ -92,7 +82,6 @@ namespace NexusDocs.Controllers
                 Interactions = page.Interactions.ToList()
             };
 
-            //5. Render using the assigned template or the default
             string viewName = page.Template?.ViewPath ?? "Default";
             return View(viewName, viewModel);
         }
