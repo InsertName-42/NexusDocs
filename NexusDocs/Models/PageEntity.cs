@@ -16,11 +16,11 @@ namespace NexusDocs.Models
         public required string PageTitle { get; set; }
         //The URL path for the page, e.g., "/gifts" or "/recipes"
         public required string Slug { get; set; }
-        public string? ETag { get; set; }
+        public string? LastETag { get; set; }
         public string? CachedContent { get; set; }
         public string? GoogleDocId { get; set; }
-        public required int SortOrder { get; set; }
-        public DateTime LastSynced { get; set; }
+        public int? SortOrder { get; set; }
+        public DateTime? LastSynced { get; set; }
         public virtual ICollection<PageInteraction> Interactions { get; set; } = new List<PageInteraction>();
     }
 }
