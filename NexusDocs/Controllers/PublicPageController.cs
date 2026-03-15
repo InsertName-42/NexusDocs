@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using NexusDocs.Data;
 using NexusDocs.Models;
 using NexusDocs.Services;
+using System.Text.RegularExpressions;
 
 namespace NexusDocs.Controllers
 {
@@ -19,7 +20,6 @@ namespace NexusDocs.Controllers
 
         public async Task<IActionResult> Display(string userKey, string slug)
         {
-            //1. Fetch the page
             var page = await _context.Pages
                 .Include(p => p.Site).ThenInclude(s => s.User)
                 .Include(p => p.Template)
@@ -29,7 +29,6 @@ namespace NexusDocs.Controllers
 
             if (page == null || page.Site == null) return NotFound();
 
-            //2. Perform the Google Sync Check
             if (!string.IsNullOrEmpty(page.GoogleDocId))
             {
                 bool isMarkdown = page.Tags.Any(t => t.Name == "Markdown" && t.IsEnabled);
@@ -40,65 +39,59 @@ namespace NexusDocs.Controllers
 
                     if (newContent != null)
                     {
-                        page.CachedContent = newContent;
+                        if (isMarkdown)
+                        {
+                            //Convert plain text markdown to HTML
+                            page.CachedContent = Markdig.Markdown.ToHtml(newContent);
+                        }
+                        else
+                        {
+                            //1. Get inner body content
+                            var bodyMatch = Regex.Match(newContent, @"<body[^>]*>(.*?)</body>", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+                            string cleaned = bodyMatch.Success ? bodyMatch.Groups[1].Value : newContent;
+
+                            //2. Remove inline styles (fixes the 1/3rd screen width and padding issue)
+                            page.CachedContent = Regex.Replace(cleaned, @"style\s*=\s*""[^""]*""", "", RegexOptions.IgnoreCase);
+                        }
+
                         page.LastETag = newVersion;
                         page.LastSynced = DateTime.UtcNow;
 
                         _context.Pages.Update(page);
                         await _context.SaveChangesAsync();
-
-                        System.Diagnostics.Debug.WriteLine($"SUCCESS: Saved version {newVersion} to DB.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    ViewBag.SyncError = ex.Message;
+                    ViewBag.SyncError = "Sync failed: " + ex.Message;
                 }
             }
 
-            var hasMarkdown = page.Tags.Any(t => t.Name == "Markdown");
-            //Check if the tag is actually being detected
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] Page '{slug}' has Markdown tag: {hasMarkdown}");
-
-            if (hasMarkdown && !string.IsNullOrEmpty(page.CachedContent))
-            {
-                string rawMarkdown = System.Text.RegularExpressions.Regex.Replace(page.CachedContent, "<.*?>", string.Empty);
-                rawMarkdown = System.Net.WebUtility.HtmlDecode(rawMarkdown);
-                page.CachedContent = Markdig.Markdown.ToHtml(rawMarkdown);
-                System.Diagnostics.Debug.WriteLine("[DEBUG] Markdown conversion successful.");
-            }
-            if (hasMarkdown && !string.IsNullOrEmpty(page.CachedContent))
-            {
-                //Convert the Markdown from the Google Doc into HTML
-                page.CachedContent = Markdig.Markdown.ToHtml(page.CachedContent);
-            }
-            //3. Navigation mapping
+            //Navigation and View Model building
             var navPages = await _context.Pages
                 .Where(p => p.SiteId == page.SiteId)
                 .OrderBy(p => p.SortOrder)
-                .Select(p => new PageNavEntry
-                {
-                    Title = p.PageTitle,
-                    Slug = p.Slug,
-                    IsActive = p.Slug == slug
-                })
+                .Select(p => new PageNavEntry { Title = p.PageTitle, Slug = p.Slug, IsActive = p.Slug == slug })
                 .ToListAsync();
 
-            //4. Build View Model
             var viewModel = new PublicPageViewModel
             {
                 SiteTitle = page.Site.SiteTitle,
                 PageTitle = page.PageTitle,
                 Content = page.CachedContent,
                 GlobalTheme = page.Site.GlobalTheme,
-                CustomStyles = page.Template?.DefaultStyles,
+                CustomStyles = page.Template?.Name ?? "Default",
                 Navigation = navPages,
-                ScriptPaths = page.Tags.Where(t => t.IsEnabled).Select(t => t.ScriptPath).ToList(),
-                Interactions = page.Interactions.ToList()
+                PageId = page.PageEntityId,
+                Interactions = page.Interactions.ToList(),
+                EventDate = page.EventDate,
+                ScriptPaths = page.Tags
+                .Where(t => t.IsEnabled)
+                .Select(t => t.Name)
+                .ToList()
             };
 
-            string viewName = page.Template?.ViewPath ?? "Default";
-            return View(viewName, viewModel);
+            return View(page.Template?.ViewPath ?? "Default", viewModel);
         }
     }
 }

@@ -10,12 +10,12 @@
 
     @if (!string.IsNullOrEmpty(Model.CustomStyles))
     {
-        <style>@Html.Raw(Model.CustomStyles)</style>
+        <link rel="stylesheet" href="~/css/Templates/@(Model.CustomStyles).css" />
     }
 </head>
 <body class="@Model.GlobalTheme">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow">
             <div class="container">
                 <a class="navbar-brand" href="/">@Model.SiteTitle</a>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
@@ -35,17 +35,11 @@
         </nav>
     </header>
 
-    <div class="container">
+    <div class="container-fluid px-1">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
-
-    @**@
-    @foreach (var scriptPath in Model.ScriptPaths)
-    {
-        <script src="@scriptPath"></script>
-    }
     @RenderSection("Scripts", required: false)
 </body>
 </html>

@@ -38,6 +38,20 @@
             </div>
 
             <div class="form-group mb-3">
+                <label asp-for="TemplateId" class="control-label">Template</label>
+                <select asp-for="TemplateId" class="form-control" id="templateSelector"
+                        asp-items="@(new SelectList(ViewBag.Templates, "TemplateEntityId", "Name"))">
+                    <option value="">-- Standard Default --</option>
+                </select>
+            </div>
+
+            <div class="form-group mb-3" id="eventDateSection" style="display:none;">
+                <label asp-for="EventDate" class="control-label">Event Date</label>
+                <input asp-for="EventDate" type="date" class="form-control" />
+                <small class="text-secondary">Used for gift list reminders and expirations.</small>
+            </div>
+
+            <div class="form-group mb-3">
                 <label class="control-label">Page Features (Tags)</label>
                 <div class="card p-3">
                     @foreach (var tag in (List<TagEntity>)ViewBag.AvailableTags)
@@ -50,6 +64,7 @@
                 </div>
             </div>
 
+
             <div class="mt-4">
                 <button type="submit" class="btn btn-success">Save Page</button>
                 <a asp-action="Index" asp-route-siteId="@Model.SiteId" class="btn btn-secondary">Cancel</a>
@@ -57,3 +72,6 @@
         </form>
     </div>
 </div>
+@section Scripts {
+    <script src="~/js/admin/page-editor.js"></script>
+}

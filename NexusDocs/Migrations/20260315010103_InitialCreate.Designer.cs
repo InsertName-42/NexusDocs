@@ -12,7 +12,7 @@ using NexusDocs.Data;
 namespace NexusDocs.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260313213942_InitialCreate")]
+    [Migration("20260315010103_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -244,6 +244,9 @@ namespace NexusDocs.Migrations
 
                     b.Property<string>("CachedContent")
                         .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("EventDate")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("GoogleDocId")
                         .HasColumnType("longtext");

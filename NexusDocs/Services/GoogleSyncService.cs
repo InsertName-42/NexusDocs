@@ -26,47 +26,34 @@ namespace NexusDocs.Services
 
             try
             {
-                //1. Request the 'version' field specifically
                 var getRequest = service.Files.Get(fileId);
                 getRequest.Fields = "version";
                 var fileMetadata = await getRequest.ExecuteAsync();
 
                 string newVersion = fileMetadata.Version?.ToString() ?? "0";
 
-                //2. Comparison Logic
                 if (newVersion == currentVersion)
                 {
                     return (null, currentVersion);
                 }
 
-                //3. Export if versions differ
-                var exportRequest = service.Files.Export(fileId, "text/html");
+                string mimeType = isMarkdown ? "text/plain" : "text/html";
+
+                var exportRequest = service.Files.Export(fileId, mimeType);
                 using (var stream = new MemoryStream())
                 {
                     await exportRequest.DownloadAsync(stream);
                     stream.Position = 0;
                     using (var reader = new StreamReader(stream))
                     {
-                        string htmlContent = await reader.ReadToEndAsync();
-
-                        System.Diagnostics.Debug.WriteLine("***************************************************");
-                        System.Diagnostics.Debug.WriteLine($">>> VERSION CHANGE DETECTED: {currentVersion} -> {newVersion} <<<");
-                        System.Diagnostics.Debug.WriteLine("***************************************************");
-
-                        return (htmlContent, newVersion);
+                        string content = await reader.ReadToEndAsync();
+                        return (content, newVersion);
                     }
                 }
             }
             catch (Google.GoogleApiException ex)
             {
-                string errorMessage = ex.Error?.Errors?.FirstOrDefault()?.Message ?? ex.Message;
-
-                System.Diagnostics.Debug.WriteLine("\n***************************************************");
-                System.Diagnostics.Debug.WriteLine("!!! GOOGLE SYNC ERROR !!!");
-                System.Diagnostics.Debug.WriteLine($"REASON: {errorMessage}");
-                System.Diagnostics.Debug.WriteLine("***************************************************\n");
-
-                throw new Exception(errorMessage);
+                throw new Exception(ex.Error?.Errors?.FirstOrDefault()?.Message ?? ex.Message);
             }
         }
     }

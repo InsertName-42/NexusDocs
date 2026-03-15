@@ -285,7 +285,8 @@ namespace NexusDocs.Migrations
                     GoogleDocId = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     SortOrder = table.Column<int>(type: "int", nullable: true),
-                    LastSynced = table.Column<DateTime>(type: "datetime(6)", nullable: true)
+                    LastSynced = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    EventDate = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
                 {

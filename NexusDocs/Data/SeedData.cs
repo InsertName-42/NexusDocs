@@ -2,9 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using NexusDocs.Data;
 using NexusDocs.Models;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 public class SeedData
 {
@@ -12,31 +10,54 @@ public class SeedData
     {
         var userManager = provider.GetRequiredService<UserManager<AppUser>>();
 
-        //Seed tags
+        //1. Seed Tags
         if (!context.Tags.Any())
         {
             context.Tags.AddRange(
-                new TagEntity
-                {
-                    Name = "Markdown",
-                    IsEnabled = true
-                },
-                new TagEntity
-                {
-                    Name = "Downloadable",
-                    IsEnabled = true,
-                    ScriptPath = "Downloadable"
-                }
+                new TagEntity { Name = "Markdown", IsEnabled = true },
+
+                new TagEntity { Name = "Downloadable", IsEnabled = true, ScriptPath = "Downloadable" }
+
             );
             await context.SaveChangesAsync();
         }
-            if (await context.Pages.AnyAsync(p => p.Slug == "prologue")) { return; }
 
-        const string SECRET_PASSWORD = "Password123!";
+        //2. Seed Templates
+        if (!context.Templates.Any())
+        {
+            //Template: Default
+            var defaultTemplate = new TemplateEntity
+            {
+                Name = "Default",
+                ViewPath = "Default",
+                DefaultStyles = "Default" //Load Default.css
+            };
+
+            //Fill in
+            var storyTemplate = new TemplateEntity
+            {
+                Name = "Standard Story",
+                ViewPath = "Default",
+                DefaultStyles = "StandardStory"
+            };
+            var giftTemplate = new TemplateEntity
+            {
+                Name = "Gifts",
+                ViewPath = "Gifts", 
+                DefaultStyles = "Gifts"
+            };
+
+            context.Templates.AddRange(defaultTemplate, storyTemplate, giftTemplate);
+            await context.SaveChangesAsync();
+        }
+
+        //3. Prevent duplicate page seeding
+        if (await context.Pages.AnyAsync(p => p.Slug == "prologue")) { return; }
+
+        //4. Setup User and Site
         const string SEED_EMAIL = "ace@example.com";
-
-        // 1. Get the tracked user instance
         var appUser = await userManager.FindByEmailAsync(SEED_EMAIL);
+
         if (appUser == null)
         {
             appUser = new AppUser
@@ -46,10 +67,9 @@ public class SeedData
                 EmailConfirmed = true,
                 UserKey = "ace"
             };
-            await userManager.CreateAsync(appUser, SECRET_PASSWORD);
+            await userManager.CreateAsync(appUser, "Password123!");
         }
 
-        // 2. Use the EXISTING tracked appUser instance
         var testSite = new SiteEntity
         {
             SiteTitle = "The Vale Chronicles",
@@ -58,13 +78,10 @@ public class SeedData
             User = appUser
         };
 
-        var defaultTemplate = new TemplateEntity
-        {
-            Name = "Standard Story",
-            ViewPath = "Default",
-            DefaultStyles = "body { font-family: 'serif'; background-color: #1a1a1a; color: #eee; }"
-        };
+        //5. Fetch the template
+        var activeTemplate = await context.Templates.FirstOrDefaultAsync(t => t.Name == "Default");
 
+        //6. Seed Pages
         var page1 = new PageEntity
         {
             PageTitle = "Prologue",
@@ -72,7 +89,7 @@ public class SeedData
             CachedContent = "<h2>The Beginning</h2><p>Narrative energy hummed through the air...</p>",
             SortOrder = 1,
             Site = testSite,
-            Template = defaultTemplate
+            Template = activeTemplate
         };
 
         var page2 = new PageEntity
@@ -82,7 +99,7 @@ public class SeedData
             CachedContent = "<h2>The First Step</h2><p>Corvus Vale stepped into the light.</p>",
             SortOrder = 2,
             Site = testSite,
-            Template = defaultTemplate
+            Template = activeTemplate
         };
 
         context.Pages.AddRange(page1, page2);

@@ -242,6 +242,9 @@ namespace NexusDocs.Migrations
                     b.Property<string>("CachedContent")
                         .HasColumnType("longtext");
 
+                    b.Property<DateTime?>("EventDate")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("GoogleDocId")
                         .HasColumnType("longtext");
 

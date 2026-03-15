@@ -1,0 +1,55 @@
+﻿@model NexusDocs.Models.PublicPageViewModel
+
+@if (ViewBag.SyncError != null)
+{
+    <div class="alert alert-warning">
+        @ViewBag.SyncError
+    </div>
+}
+@{
+    //Get "true" keys
+    var checkedKeys = Model.Interactions
+        .Where(i => i.Value == "true")
+        .Select(i => i.ElementKey);
+    var checkedKeysJson = System.Text.Json.JsonSerializer.Serialize(checkedKeys);
+}
+
+<article class="page-content gift-page"
+         id="gift-container"
+         data-page-id="@Model.PageId"
+         data-checked-keys='@checkedKeysJson'
+         data-expired="@(Model.EventDate.HasValue && Model.EventDate < DateTime.Now ? "true" : "false")">
+    
+    <h1>@Model.PageTitle</h1>
+    
+    @if (Model.EventDate.HasValue)
+    {
+        <p class="text-muted">
+            <i class="bi bi-calendar-event"></i>
+            Event Date: @Model.EventDate.Value.ToShortDateString()
+            @if (Model.EventDate < DateTime.Now)
+            {
+                <span class="badge bg-danger ms-2">Expired</span>
+            }
+        </p>
+    }
+    
+    <hr />
+
+    <div class="doc-body">
+        @if (string.IsNullOrEmpty(Model.Content))
+        {
+            <p class="text-muted"><em>No content found. Please refresh to try syncing again.</em></p>
+        }
+        else
+        {
+            @Html.Raw(Model.Content)
+        }
+    </div>
+
+    <partial name="_PageTags" model="Model" />
+</article>
+
+@section Scripts {
+    <script src="~/js/templates/gifts.js"></script>
+}

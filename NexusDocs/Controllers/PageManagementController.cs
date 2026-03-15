@@ -35,6 +35,7 @@ public class PageManagementController : Controller
     public async Task<IActionResult> Create(int siteId)
     {
         ViewBag.AvailableTags = await _context.Tags.ToListAsync();
+        ViewBag.Templates = await _context.Templates.ToListAsync();
         return View(new PageEntity
         {
             SiteId = siteId,
@@ -72,7 +73,8 @@ public class PageManagementController : Controller
 
             return RedirectToAction(nameof(Index), new { siteId = page.SiteId });
         }
-
+        ViewBag.AvailableTags = await _context.Tags.Where(t => t.IsEnabled).ToListAsync();
+        ViewBag.Templates = await _context.Templates.ToListAsync();
         return View(page);
     }
     private string? ExtractDocId(string input)
