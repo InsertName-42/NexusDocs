@@ -1,0 +1,55 @@
+﻿@model NexusDocs.Models.PublicPageViewModel
+@using System.Text.RegularExpressions
+
+@{
+    var imgTagMatches = Regex.Matches(Model.Content ?? "", "<img.+?src=[\"'](.+?)[\"'].*?>", RegexOptions.IgnoreCase);
+    
+    var allImages = imgTagMatches.Cast<Match>().Select(m => m.Groups[1].Value).ToList();
+}
+
+<article class="page-content container">
+    <partial name="_PageTags" model='(Model, "Top")' />
+
+    <div class="gallery-container">
+        <h1 class="text-center mb-4">@Model.PageTitle</h1>
+
+        @if (allImages.Any())
+        {
+            <div class="gallery-grid">
+                @foreach (var imgSrc in allImages)
+                {
+                    <div class="gallery-item">
+                        @if (imgSrc.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <img src="@imgSrc" class="gallery-img" alt="Gallery image" loading="lazy" />
+                        }
+                        else
+                        {
+                            <a href="@imgSrc" target="_blank">
+                                <img src="@imgSrc" class="gallery-img" alt="Gallery image" loading="lazy" />
+                            </a>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info no-images-alert text-center">
+                <i class="bi bi-images"></i> No images were found in this document.
+            </div>
+        }
+    </div>
+
+    <partial name="_PageTags" model='(Model, "Bottom")' />
+</article>
+
+@if (Model.Interactions.Any())
+{
+    <section class="interactions d-none">
+        @foreach (var interaction in Model.Interactions)
+        {
+            <div class="interaction-record" data-key="@interaction.ElementKey" data-value="@interaction.Value"></div>
+        }
+    </section>
+}

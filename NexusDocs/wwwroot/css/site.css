@@ -29,3 +29,96 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+.Sepia .theme-sepia-nav {
+    background-color: #e3d5b8 !important;
+    border-bottom: 1px solid #d1c1a1;
+}
+
+.Sepia .navbar-brand, .Sepia .nav-link {
+    color: #5b4636 !important;
+}
+/* Base Styles */
+.page-content {
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-height: 100vh;
+}
+
+/* Dark Theme */
+body.Dark {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+.Dark .gallery-item {
+    background: #1e1e1e;
+    border: 1px solid #333;
+}
+
+.Dark .alert-info {
+    background-color: #2c3e50;
+    border-color: #34495e;
+    color: #ecf0f1;
+}
+
+/* Sepia Theme */
+body.Sepia {
+    background-color: #d1c1a1;
+    color: #5b4636;
+}
+
+.Sepia .theme-sepia-nav {
+    background-color: #e3d5b8 !important;
+    border-bottom: 1px solid #d1c1a1;
+}
+
+.Sepia .navbar-brand,
+.Sepia .nav-link {
+    color: #5b4636 !important;
+}
+
+.Sepia .gallery-item {
+    background: #efe4cc;
+    border: 1px solid #d1c1a1;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.gallery-img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+.page-content h1 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.doc-body {
+    line-height: 1.6;
+    font-size: 1.1rem;
+    margin-top: 2rem;
+}
+
+.page-content {
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+.Dark .page-content {
+    background-color: #1e1e1e;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.Sepia .page-content {
+    background-color: #efe4cc;
+    border: 1px solid #d1c1a1;
+}
+

@@ -74,6 +74,7 @@ namespace NexusDocs.Controllers
                 .Select(p => new PageNavEntry { Title = p.PageTitle, Slug = p.Slug, IsActive = p.Slug == slug })
                 .ToListAsync();
 
+            var enabledTags = page.Tags.Where(t => t.IsEnabled).ToList();
             var viewModel = new PublicPageViewModel
             {
                 SiteTitle = page.Site.SiteTitle,
@@ -85,10 +86,7 @@ namespace NexusDocs.Controllers
                 PageId = page.PageEntityId,
                 Interactions = page.Interactions.ToList(),
                 EventDate = page.EventDate,
-                ScriptPaths = page.Tags
-                    .Where(t => t.IsEnabled)
-                    .Select(t => t.Name)
-                    .ToList(),
+                Tags = enabledTags,
                 TagZones = page.Tags
                     .Where(t => t.IsEnabled)
                     .GroupBy(t => t.Zone ?? "Bottom")

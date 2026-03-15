@@ -10,58 +10,58 @@ public class SeedData
     {
         var userManager = provider.GetRequiredService<UserManager<AppUser>>();
 
-        //1. Seed Tags
-        if (!context.Tags.Any())
+        //Seed Tags
+        var tags = new List<TagEntity>
         {
-            context.Tags.AddRange(
-                new TagEntity { Name = "Markdown", IsEnabled = true },
+            new TagEntity { Name = "Markdown", IsEnabled = true },
+            new TagEntity { Name = "Downloadable", IsEnabled = true, ScriptPath = "downloadable" },
+            new TagEntity { Name = "ExternalLinks", IsEnabled = true, ScriptPath = "external-links" }
+        };
 
-                new TagEntity { Name = "Downloadable", IsEnabled = true, ScriptPath = "Downloadable" }
-
-            );
-            await context.SaveChangesAsync();
-        }
-
-        //2. Seed Templates
-        if (!context.Templates.Any())
+        foreach (var tag in tags)
         {
-            //Template: Default
-            var defaultTemplate = new TemplateEntity
+            var existingTag = await context.Tags.FirstOrDefaultAsync(t => t.Name == tag.Name);
+            if (existingTag == null)
             {
-                Name = "Default",
-                ViewPath = "Default",
-                DefaultStyles = "Default" //Load Default.css
-            };
-
-            //Fill in
-            var imageTemplate = new TemplateEntity
+                context.Tags.Add(tag);
+            }
+            else
             {
-                Name = "Image",
-                ViewPath = "Image",
-                DefaultStyles = "Image"
-            };
-            var giftTemplate = new TemplateEntity
-            {
-                Name = "Gifts",
-                ViewPath = "Gifts", 
-                DefaultStyles = "Gifts"
-            };
-            var calendarTemplate = new TemplateEntity
-            {
-                Name = "Calendar",
-                ViewPath = "Calendar",
-                DefaultStyles = "Calendar"
-            };
-
-            context.Templates.AddRange(defaultTemplate, imageTemplate, giftTemplate, calendarTemplate);
-            await context.SaveChangesAsync();
+                //Update properties if they changed in seed data
+                existingTag.ScriptPath = tag.ScriptPath;
+                existingTag.IsEnabled = tag.IsEnabled;
+                existingTag.Zone = tag.Zone;
+            }
         }
+        await context.SaveChangesAsync();
 
-        //3. Prevent duplicate page seeding
-        if (await context.Pages.AnyAsync(p => p.Slug == "prologue")) { return; }
+        //Seed Templates
+        var templates = new List<TemplateEntity>
+        {
+            new TemplateEntity { Name = "Default", ViewPath = "Default", DefaultStyles = "Default" },
+            new TemplateEntity { Name = "Image", ViewPath = "Image", DefaultStyles = "Image" },
+            new TemplateEntity { Name = "Gifts", ViewPath = "Gifts", DefaultStyles = "Gifts" },
+            new TemplateEntity { Name = "Calendar", ViewPath = "Calendar", DefaultStyles = "Calendar" },
+            new TemplateEntity { Name = "Gallery", ViewPath = "Gallery", DefaultStyles = "Gallery" }
+        };
 
-        //4. Setup User and Site
-        const string SEED_EMAIL = "ace@example.com";
+        foreach (var temp in templates)
+        {
+            var existingTemp = await context.Templates.FirstOrDefaultAsync(t => t.Name == temp.Name);
+            if (existingTemp == null)
+            {
+                context.Templates.Add(temp);
+            }
+            else
+            {
+                existingTemp.ViewPath = temp.ViewPath;
+                existingTemp.DefaultStyles = temp.DefaultStyles;
+            }
+        }
+        await context.SaveChangesAsync();
+
+        //User & Site Seeding
+        const string SEED_EMAIL = "admin@nexusdocs.com";
         var appUser = await userManager.FindByEmailAsync(SEED_EMAIL);
 
         if (appUser == null)
@@ -76,39 +76,37 @@ public class SeedData
             await userManager.CreateAsync(appUser, "Password123!");
         }
 
-        var testSite = new SiteEntity
+        //Seed Site (Check by Title or UserId)
+        var testSite = await context.Sites.FirstOrDefaultAsync(s => s.UserId == appUser.Id);
+        if (testSite == null)
         {
-            SiteTitle = "The Vale Chronicles",
-            GlobalTheme = "Dark",
-            UserId = appUser.Id,
-            User = appUser
+            testSite = new SiteEntity
+            {
+                SiteTitle = "The Vale Chronicles",
+                GlobalTheme = "Dark",
+                UserId = appUser.Id
+            };
+            context.Sites.Add(testSite);
+            await context.SaveChangesAsync();
+        }
+
+        //Seed Pages (Check by Slug within the Site)
+        var activeTemplate = await context.Templates.FirstAsync(t => t.Name == "Default");
+
+        var pagesToSeed = new List<PageEntity>
+        {
+            new PageEntity { PageTitle = "Prologue", Slug = "prologue", SortOrder = 1, SiteId = testSite.SiteEntityId, TemplateId = activeTemplate.TemplateEntityId },
+            new PageEntity { PageTitle = "Chapter One", Slug = "chapter-1", SortOrder = 2, SiteId = testSite.SiteEntityId, TemplateId = activeTemplate.TemplateEntityId }
         };
 
-        //5. Fetch the template
-        var activeTemplate = await context.Templates.FirstOrDefaultAsync(t => t.Name == "Default");
-
-        //6. Seed Pages
-        var page1 = new PageEntity
+        foreach (var p in pagesToSeed)
         {
-            PageTitle = "Prologue",
-            Slug = "prologue",
-            CachedContent = "<h2>The Beginning</h2><p>Narrative energy hummed through the air...</p>",
-            SortOrder = 1,
-            Site = testSite,
-            Template = activeTemplate
-        };
+            if (!await context.Pages.AnyAsync(page => page.Slug == p.Slug && page.SiteId == testSite.SiteEntityId))
+            {
+                context.Pages.Add(p);
+            }
+        }
 
-        var page2 = new PageEntity
-        {
-            PageTitle = "Chapter One",
-            Slug = "chapter-1",
-            CachedContent = "<h2>The First Step</h2><p>Corvus Vale stepped into the light.</p>",
-            SortOrder = 2,
-            Site = testSite,
-            Template = activeTemplate
-        };
-
-        context.Pages.AddRange(page1, page2);
         await context.SaveChangesAsync();
     }
 }

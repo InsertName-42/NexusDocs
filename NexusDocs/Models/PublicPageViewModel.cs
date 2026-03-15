@@ -12,7 +12,7 @@
         public List<PageNavEntry> Navigation { get; set; } = new();
 
         //Functional tags and interactions
-        public List<string> ScriptPaths { get; set; } = new();
+        public List<TagEntity> Tags { get; set; } = new();
         public List<PageInteraction> Interactions { get; set; } = new();
         public DateTime? EventDate { get; set; }
         public int PageId { get; set; }

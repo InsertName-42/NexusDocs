@@ -12,7 +12,7 @@ using NexusDocs.Data;
 namespace NexusDocs.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260315061740_InitialCreate")]
+    [Migration("20260315082016_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

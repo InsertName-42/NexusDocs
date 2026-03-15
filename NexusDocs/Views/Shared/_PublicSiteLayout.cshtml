@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@Model.PageTitle - @Model.SiteTitle</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
     @if (!string.IsNullOrEmpty(Model.CustomStyles))
     {
@@ -15,8 +16,16 @@
 </head>
 <body class="@Model.GlobalTheme">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow">
-            <div class="container">
+        @{
+        //Determine Bootstrap classes based on the theme
+        string navClass = Model.GlobalTheme == "Dark" ? "navbar-dark bg-dark" : "navbar-light bg-white";
+        if (Model.GlobalTheme == "Sepia")
+        {
+            navClass = "navbar-light theme-sepia-nav"; 
+        }
+    }
+        <nav class="navbar navbar-expand-sm @navClass border-bottom box-shadow">
+            <div class="container-fluid px-4">
                 @{
                     var userKey = ViewContext.RouteData.Values["userKey"];
                 
