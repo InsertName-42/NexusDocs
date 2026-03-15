@@ -54,6 +54,10 @@ public class PageManagementController : Controller
         {
             page.GoogleDocId = ExtractDocId(page.GoogleDocId);
         }
+
+        bool slugExists = await _context.Pages
+        .AnyAsync(p => p.SiteId == page.SiteId && p.Slug == page.Slug);
+
         if (ModelState.IsValid)
         {
             var existingPage = await _context.Pages
@@ -128,6 +132,14 @@ public class PageManagementController : Controller
         if (!string.IsNullOrEmpty(page.GoogleDocId))
         {
             page.GoogleDocId = ExtractDocId(page.GoogleDocId);
+        }
+
+        bool slugExists = await _context.Pages
+        .AnyAsync(p => p.SiteId == page.SiteId && p.Slug == page.Slug);
+
+        if (slugExists)
+        {
+            ModelState.AddModelError("Slug", "You already have a page with this URL slug. Please choose a unique one.");
         }
 
         if (ModelState.IsValid)

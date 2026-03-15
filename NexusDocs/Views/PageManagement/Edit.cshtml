@@ -28,6 +28,12 @@
                 </select>
             </div>
 
+            <div id="giftTemplateWarning" class="alert alert-warning d-none mt-2">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <strong>Important:</strong> In the Gifts template, checkboxes are linked to the <em>text</em> of the list item.
+                If you rename a claimed item in your Google Doc, you will need to manually reclaim it or the claim will be lost.
+            </div>
+
             <div class="form-group mb-3" id="eventDateSection">
                 <label asp-for="EventDate" class="control-label">Event Date</label>
                 <input asp-for="EventDate" type="date" class="form-control" />

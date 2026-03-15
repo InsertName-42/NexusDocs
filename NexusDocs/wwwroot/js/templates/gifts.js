@@ -1,6 +1,5 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
     const container = document.getElementById('gift-container');
-    console.log("Gift container found:", container);
     if (!container) return;
 
     const isExpired = container.dataset.expired === "true";
@@ -11,7 +10,11 @@
     const listItems = container.querySelectorAll('.doc-body li');
 
     listItems.forEach((li, index) => {
-        const key = `gift-item-${index}`;
+        //Create a key from the text 
+        const cleanText = li.innerText.trim().toLowerCase().substring(0, 80);
+        const key = cleanText.replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+        if (!key) return;
         const isAlreadyChecked = checkedKeys.includes(key);
         li.style.cursor = isExpired ? "default" : "pointer";
 
@@ -29,14 +32,18 @@
         if (!isExpired) {
             li.addEventListener('click', async (e) => {
                 if (e.target.type === 'checkbox') {
+                    //Send update if the checkbox was clicked
                     await saveInteraction(pageId, key, checkbox.checked);
                     return;
                 }
+
                 checkbox.checked = !checkbox.checked;
                 await saveInteraction(pageId, key, checkbox.checked);
-                });
+            });
         }
     });
+
+    //Helper function to handle the fetch request to the InteractionsController
     async function saveInteraction(pageId, elementKey, isChecked) {
         try {
             const response = await fetch('/Interactions/Toggle', {

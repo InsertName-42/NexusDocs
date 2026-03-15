@@ -1,14 +1,22 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
     const templateSelector = document.getElementById('templateSelector');
     const eventDateSection = document.getElementById('eventDateSection');
+    const giftWarning = document.getElementById('giftTemplateWarning');
 
-    if (templateSelector && eventDateSection) {
-        const toggleDate = () => {
-            const selectedText = templateSelector.options[templateSelector.selectedIndex].text;
-            eventDateSection.style.display = (selectedText === "Gifts") ? "block" : "none";
-        };
+    function updateFormVisibility() {
+        const selectedTemplate = templateSelector.options[templateSelector.selectedIndex].text;
 
-        templateSelector.addEventListener('change', toggleDate);
-        toggleDate();
+        if (selectedTemplate === "Gifts") {
+            eventDateSection?.classList.remove('d-none');
+            giftWarning?.classList.remove('d-none');
+        } else {
+            eventDateSection?.classList.add('d-none');
+            giftWarning?.classList.add('d-none');
+        }
+    }
+    if (templateSelector) {
+        updateFormVisibility();
+
+        templateSelector.addEventListener('change', updateFormVisibility);
     }
 });
