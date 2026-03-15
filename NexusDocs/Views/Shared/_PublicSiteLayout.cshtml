@@ -17,14 +17,29 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow">
             <div class="container">
-                <a class="navbar-brand" href="/">@Model.SiteTitle</a>
+                @{
+                    var userKey = ViewContext.RouteData.Values["userKey"];
+                
+                    //Look for a page with slug "home" OR a title matching the Site Title
+                    var brandNav = Model.Navigation.FirstOrDefault(n =>
+                        n.Slug.ToLower() == "home" ||
+                        n.Title.Equals(Model.SiteTitle, StringComparison.OrdinalIgnoreCase));
+
+                    //Determine link destination
+                    var brandHref = brandNav != null ? $"/{userKey}/{brandNav.Slug}" : "#";
+                }
+
+                @* Site Name acts as the Home link *@
+                <a class="navbar-brand" href="@brandHref">@Model.SiteTitle</a>
+
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        @foreach (var nav in Model.Navigation)
+                        @* Ensure brandpage is listed only once *@
+                        @foreach (var nav in Model.Navigation.Where(n => n != brandNav))
                         {
                             <li class="nav-item">
                                 <a class="nav-link @(nav.IsActive ? "active font-weight-bold" : "")"
-                                   href="/@ViewContext.RouteData.Values["userKey"]/@nav.Slug">
+                                       href="/@userKey/@nav.Slug">
                                     @nav.Title
                                 </a>
                             </li>
