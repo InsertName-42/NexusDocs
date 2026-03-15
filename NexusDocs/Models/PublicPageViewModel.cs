@@ -16,6 +16,8 @@
         public List<PageInteraction> Interactions { get; set; } = new();
         public DateTime? EventDate { get; set; }
         public int PageId { get; set; }
+        public Dictionary<string, List<string>> TagZones { get; set; } = new();
+
     }
 
     public class PageNavEntry

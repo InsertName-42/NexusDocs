@@ -20,7 +20,6 @@ namespace NexusDocs.Models
         public string? GoogleDocId { get; set; }
         public int? SortOrder { get; set; }
         public DateTime? LastSynced { get; set; }
-
         public DateTime? EventDate { get; set; }
         public virtual ICollection<PageInteraction> Interactions { get; set; } = new List<PageInteraction>();
     }

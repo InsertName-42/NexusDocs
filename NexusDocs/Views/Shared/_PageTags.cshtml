@@ -1,31 +1,34 @@
-﻿@model NexusDocs.Models.PublicPageViewModel
+﻿@model (NexusDocs.Models.PublicPageViewModel ViewModel, string Zone)
 
-@if (Model.ScriptPaths.Contains("Downloadable"))
-{
-    <div class="tag-feature mt-5 border-top pt-3">
-        <button id="downloadPdf" class="btn btn-outline-primary">
-            <i class="bi bi-file-pdf"></i> Download as PDF
-        </button>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script>
-        document.getElementById('downloadPdf').addEventListener('click', () => {
-        const element = document.querySelector('.doc-body');
-        const options = {
-        margin: 1,
-        filename: '@Model.PageTitle' + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-        };
-        html2pdf().set(options).from(element).save();
-        });
-    </script>
+@{
+    //Get tags assigned to this zone for this page
+    var tagsInThisZone = Model.ViewModel.TagZones.ContainsKey(Model.Zone)
+                         ? Model.ViewModel.TagZones[Model.Zone]
+                         : new List<string>();
 }
 
-@* Space for future tags *@
-@if (Model.ScriptPaths.Contains("TableOfContents"))
+@foreach (var tagName in tagsInThisZone)
 {
-    @* Logic for generating a TOC *@
+    @if (tagName == "Downloadable")
+    {
+        <div class="tag-feature py-2">
+            <button id="downloadPdf" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-file-pdf"></i> Download PDF
+            </button>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+        <script>
+            document.getElementById('downloadPdf')?.addEventListener('click', () => {
+            const element = document.querySelector('.doc-body');
+            const options = {
+                margin: 1,
+                filename: '@(Model.ViewModel.PageTitle).pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().from(element).save('@(Model.ViewModel.PageTitle).pdf');
+            });
+        </script>
+    }
 }

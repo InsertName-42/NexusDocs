@@ -35,7 +35,7 @@
     }
     
     <hr />
-
+    <partial name="_PageTags" model='(Model, "Top")' />
     <div class="doc-body">
         @if (string.IsNullOrEmpty(Model.Content))
         {
@@ -47,7 +47,7 @@
         }
     </div>
 
-    <partial name="_PageTags" model="Model" />
+    <partial name="_PageTags" model='(Model, "Bottom")' />
 </article>
 
 @section Scripts {

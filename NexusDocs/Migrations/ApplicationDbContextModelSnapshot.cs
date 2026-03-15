@@ -363,6 +363,10 @@ namespace NexusDocs.Migrations
                     b.Property<string>("ScriptPath")
                         .HasColumnType("longtext");
 
+                    b.Property<string>("Zone")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.HasKey("Id");
 
                     b.ToTable("Tags");

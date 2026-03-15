@@ -86,9 +86,13 @@ namespace NexusDocs.Controllers
                 Interactions = page.Interactions.ToList(),
                 EventDate = page.EventDate,
                 ScriptPaths = page.Tags
-                .Where(t => t.IsEnabled)
-                .Select(t => t.Name)
-                .ToList()
+                    .Where(t => t.IsEnabled)
+                    .Select(t => t.Name)
+                    .ToList(),
+                TagZones = page.Tags
+                    .Where(t => t.IsEnabled)
+                    .GroupBy(t => t.Zone ?? "Bottom")
+                    .ToDictionary(g => g.Key, g => g.Select(t => t.Name).ToList())
             };
 
             return View(page.Template?.ViewPath ?? "Default", viewModel);

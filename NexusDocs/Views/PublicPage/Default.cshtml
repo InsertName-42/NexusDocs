@@ -10,6 +10,7 @@
 <article class="page-content">
     <h1>@Model.PageTitle</h1>
     <hr />
+    <partial name="_PageTags" model='(Model, "Top")' />
 
     <div class="doc-body">
         @if (string.IsNullOrEmpty(Model.Content))
@@ -21,7 +22,7 @@
                 @Html.Raw(Model.Content)
             }
         </div>
-        <partial name="_PageTags" model="Model" />
+    <partial name="_PageTags" model='(Model, "Bottom")' />
 </article>
 
 @if (Model.Interactions.Any())
