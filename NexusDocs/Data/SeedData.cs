@@ -34,11 +34,11 @@ public class SeedData
             };
 
             //Fill in
-            var storyTemplate = new TemplateEntity
+            var imageTemplate = new TemplateEntity
             {
-                Name = "Standard Story",
-                ViewPath = "Default",
-                DefaultStyles = "StandardStory"
+                Name = "Image",
+                ViewPath = "Image",
+                DefaultStyles = "Image"
             };
             var giftTemplate = new TemplateEntity
             {
@@ -46,8 +46,14 @@ public class SeedData
                 ViewPath = "Gifts", 
                 DefaultStyles = "Gifts"
             };
+            var calendarTemplate = new TemplateEntity
+            {
+                Name = "Calendar",
+                ViewPath = "Calendar",
+                DefaultStyles = "Calendar"
+            };
 
-            context.Templates.AddRange(defaultTemplate, storyTemplate, giftTemplate);
+            context.Templates.AddRange(defaultTemplate, imageTemplate, giftTemplate, calendarTemplate);
             await context.SaveChangesAsync();
         }
 
