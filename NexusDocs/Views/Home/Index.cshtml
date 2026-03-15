@@ -1,8 +1,65 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+<header class="hero-section">
+    <div class="hero-pill-card">
+        <h1 class="hero-title">
+            If you can <span style="color: #00d4ff;">edit a doc</span>,<br>
+            you can build a website.
+        </h1>
+        <p class="fs-5 opacity-75">
+            No coding required. Automatically updates from your Google Docs. 2 min setup.
+        </p>
+        
+        <a href="/Identity/Account/Register" class="hero-btn">
+            Get Started for Free
+        </a>
+    </div>
+</header>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="steps-section py-5">
+    <div class="container text-center">
+        <h2 class="mb-5 fw-bold">Three steps to your website</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="step-card p-4">
+                    <div class="step-number mb-3">1</div>
+                    <h4 class="fw-bold">Paste your links</h4>
+                    <p class="text-muted">Simply drop in the URL of any Google Doc you want to turn into a page.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card p-4">
+                    <div class="step-number mb-3">2</div>
+                    <h4 class="fw-bold">Choose templates & tags</h4>
+                    <p class="text-muted">Select professional layouts and organize your content with custom tags.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card p-4">
+                    <div class="step-number mb-3">3</div>
+                    <h4 class="fw-bold">Hit publish</h4>
+                    <p class="text-muted">Your site goes live instantly on your own personal URL.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="sync-feature py-5 bg-light rounded-4 my-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-3">Real-time Sync</h2>
+                <p class="fs-5">Forget clunky CMS editors. Nexus Docs connects directly to the Google Docs API.</p>
+                <p>When you edit your document in Google, our system detects the change, strips out unnecessary inline styles, and updates your site automatically. Your content stays clean, professional, and up-to-date without ever touching a line of code.</p>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="sync-visual p-5 bg-white shadow-sm rounded-4">
+                    <span class="badge bg-success mb-2">Live Connection</span>
+                    <div class="h4">Google Docs &rarr; Nexus Docs</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
