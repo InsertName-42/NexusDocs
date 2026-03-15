@@ -28,12 +28,17 @@
 @if (Model.Interactions.Any())
 {
     <section class="interactions mt-5">
-        <h4>Page Actions</h4>
-        @foreach (var interaction in Model.Interactions)
-        {
-            <div class="interaction-item" data-key="@interaction.ElementKey">
-                <span>@interaction.InteractionType: @interaction.Value</span>
-            </div>
-        }
+        <div id="interaction-data" class="d-none">
+            @foreach (var interaction in Model.Interactions)
+            {
+                <div class="interaction-record"
+                     data-key="@interaction.ElementKey"
+                     data-type="@interaction.InteractionType"
+                     data-value="@interaction.Value">
+                </div>
+            }
+        </div>
+
+        <div id="interaction-ui-root"></div>
     </section>
 }

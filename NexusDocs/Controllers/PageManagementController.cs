@@ -30,6 +30,78 @@ public class PageManagementController : Controller
 
         return View(site);
     }
+    public async Task<IActionResult> Edit(int id)
+    {
+        var page = await _context.Pages
+            .Include(p => p.Tags)
+            .FirstOrDefaultAsync(p => p.PageEntityId == id);
+
+        if (page == null) return NotFound();
+
+        ViewBag.AvailableTags = await _context.Tags.Where(t => t.IsEnabled).ToListAsync();
+        ViewBag.Templates = await _context.Templates.ToListAsync();
+
+        return View(page);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, PageEntity page, int[] selectedTagIds)
+    {
+        if (id != page.PageEntityId) return NotFound();
+
+        if (!string.IsNullOrEmpty(page.GoogleDocId))
+        {
+            page.GoogleDocId = ExtractDocId(page.GoogleDocId);
+        }
+        if (ModelState.IsValid)
+        {
+            var existingPage = await _context.Pages
+                .Include(p => p.Tags)
+                .FirstOrDefaultAsync(p => p.PageEntityId == id);
+
+            if (existingPage == null) return NotFound();
+
+            //Update basic properties
+            existingPage.PageTitle = page.PageTitle;
+            existingPage.GoogleDocId = page.GoogleDocId;
+            existingPage.TemplateId = page.TemplateId;
+            existingPage.EventDate = page.EventDate;
+            existingPage.SortOrder = page.SortOrder;
+
+            //Update Tags
+            existingPage.Tags.Clear();
+            if (selectedTagIds != null)
+            {
+                foreach (var tagId in selectedTagIds)
+                {
+                    var tag = await _context.Tags.FindAsync(tagId);
+                    if (tag != null) existingPage.Tags.Add(tag);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index), new { siteId = existingPage.SiteId });
+        }
+        ViewBag.AvailableTags = await _context.Tags.Where(t => t.IsEnabled).ToListAsync();
+        ViewBag.Templates = await _context.Templates.ToListAsync();
+
+        return View(page);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var page = await _context.Pages.FindAsync(id);
+        if (page != null)
+        {
+            int siteId = page.SiteId;
+            _context.Pages.Remove(page);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index), new { siteId = siteId });
+        }
+        return BadRequest();
+    }
 
     [HttpGet]
     public async Task<IActionResult> Create(int siteId)
