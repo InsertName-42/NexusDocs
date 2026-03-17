@@ -1,9 +1,10 @@
+using Google.Apis.Drive.v3;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NexusDocs.Data;
 using NexusDocs.Models;
+using NexusDocs.Repositories;
 using NexusDocs.Services;
-using Google.Apis.Drive.v3;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,8 @@ builder.Services.AddDefaultIdentity<AppUser>(options =>
 
 //Services
 builder.Services.AddScoped<GoogleSyncService>();
+
+builder.Services.AddScoped<IPageRepository, PageRepository>();
 
 builder.Services.AddControllersWithViews();
 

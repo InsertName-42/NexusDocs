@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="NexusDocs/NexusDocs.csproj" />
+  <Project Path="NexusDocsTest/NexusDocsTest.csproj" Id="f25d5209-13d4-4d9b-ac10-09d6133de43f" />
 </Solution>
