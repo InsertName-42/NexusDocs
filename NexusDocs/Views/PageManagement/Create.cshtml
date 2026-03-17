@@ -1,0 +1,83 @@
+﻿@model NexusDocs.Models.PageEntity
+
+@{
+    ViewData["Title"] = "Add New Page";
+}
+
+<h1>Add Page to Site</h1>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            
+            <input type="hidden" asp-for="SiteId" />
+
+            <div class="form-group mb-3">
+                <label asp-for="PageTitle" class="control-label">Page Title</label>
+                <input asp-for="PageTitle" class="form-control" placeholder="e.g. Chapter One" />
+                <span asp-validation-for="PageTitle" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Slug" class="control-label">URL Slug</label>
+                <input asp-for="Slug" class="form-control" placeholder="e.g. chapter-1" />
+                <span asp-validation-for="Slug" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="GoogleDocId" class="control-label">Google Doc Link</label>
+                <input asp-for="GoogleDocId" class="form-control" placeholder="Google Doc URL" />
+                <small class="text-muted">Paste the full URL here</small>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="SortOrder" class="control-label">Sort Order</label>
+                <input asp-for="SortOrder" type="number" class="form-control" value="1" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="TemplateId" class="control-label">Template</label>
+                <select asp-for="TemplateId" class="form-control" id="templateSelector"
+                        asp-items="@(new SelectList(ViewBag.Templates, "TemplateEntityId", "Name"))">
+                    <option value="">-- Standard Default --</option>
+                </select>
+            </div>
+
+            <div id="giftTemplateWarning" class="alert alert-warning d-none mt-2">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <strong>Important:</strong> In the Gifts template, checkboxes are linked to the <em>text</em> of the list item.
+                If you rename a claimed item in your Google Doc, you will need to manually reclaim it or the claim will be lost.
+            </div>
+
+            <div class="form-group mb-3" id="eventDateSection" style="display:none;">
+                <label asp-for="EventDate" class="control-label">Event Date</label>
+                <input asp-for="EventDate" type="date" class="form-control" />
+                <small class="text-secondary">Used for gift list reminders and expirations.</small>
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="control-label">Page Features (Tags)</label>
+                <div class="card p-3">
+                    @foreach (var tag in (List<TagEntity>)ViewBag.AvailableTags)
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="selectedTagIds" value="@tag.Id" id="tag_@tag.Id">
+                            <label class="form-check-label" for="tag_@tag.Id">@tag.Name</label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-success">Save Page</button>
+                <a asp-action="Index" asp-route-siteId="@Model.SiteId" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/admin/page-editor.js"></script>
+}

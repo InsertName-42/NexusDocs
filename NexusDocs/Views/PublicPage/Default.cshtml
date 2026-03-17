@@ -1,0 +1,44 @@
+﻿@model NexusDocs.Models.PublicPageViewModel
+
+    @if (ViewBag.SyncError != null)
+    {
+        <div class="alert alert-warning">
+            @ViewBag.SyncError
+        </div>
+    }
+
+<article class="page-content">
+    <h1>@Model.PageTitle</h1>
+    <hr />
+    <partial name="_PageTags" model='(Model, "Top")' />
+
+    <div class="doc-body">
+        @if (string.IsNullOrEmpty(Model.Content))
+            {
+                <p class="text-muted"><em>No content found. Please refresh to try syncing again.</em></p>
+            }
+            else
+            {
+                @Html.Raw(Model.Content)
+            }
+        </div>
+    <partial name="_PageTags" model='(Model, "Bottom")' />
+</article>
+
+@if (Model.Interactions.Any())
+{
+    <section class="interactions mt-5">
+        <div id="interaction-data" class="d-none">
+            @foreach (var interaction in Model.Interactions)
+            {
+                <div class="interaction-record"
+                     data-key="@interaction.ElementKey"
+                     data-type="@interaction.InteractionType"
+                     data-value="@interaction.Value">
+                </div>
+            }
+        </div>
+
+        <div id="interaction-ui-root"></div>
+    </section>
+}

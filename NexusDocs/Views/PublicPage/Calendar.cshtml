@@ -1,0 +1,33 @@
+﻿@model NexusDocs.Models.PublicPageViewModel
+@using System.Text.RegularExpressions
+@{
+    var tableMatch = Regex.Match(Model.Content ?? "", @"<table.*?>.*?</table>", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+    string calendarHtml = "";
+    bool validTableFound = false;
+
+    if (tableMatch.Success)
+    {
+        int colCount = Regex.Matches(Regex.Match(tableMatch.Value, "<tr.*?>.*?</tr>", RegexOptions.Singleline).Value, "<td.*?>").Count;
+        if (colCount == 7)
+        {
+            calendarHtml = tableMatch.Value;
+            validTableFound = true;
+        }
+    }
+}
+
+<article class="page-content container-fluid">
+    <partial name="_PageTags" model='(Model, "Top")' />
+    <div class="text-center mb-4"><h1>@Model.PageTitle</h1></div>
+    @if (validTableFound)
+    {
+        <div class="calendar-wrapper">
+            <div class="calendar-table-container">@Html.Raw(calendarHtml)</div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">Please ensure your Doc contains a 7-column table.</div>
+    }
+    <partial name="_PageTags" model='(Model, "Bottom")' />
+</article>

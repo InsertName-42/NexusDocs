@@ -1,0 +1,24 @@
+﻿@model (NexusDocs.Models.PublicPageViewModel ViewModel, string Zone)
+
+@foreach (var tagName in Model.ViewModel.TagZones.ContainsKey(Model.Zone)
+    ? Model.ViewModel.TagZones[Model.Zone] : new List<string>())
+{
+    //Find the Tag object to get its ScriptPath
+    var tag = Model.ViewModel.Tags.FirstOrDefault(t => t.Name == tagName);
+    if (tag == null) continue;
+
+    @if (tagName == "Downloadable")
+    {
+        <div class="tag-feature py-2">
+            <button id="downloadPdf" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-file-pdf"></i> Download PDF
+            </button>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    }
+
+    @if (!string.IsNullOrEmpty(tag.ScriptPath))
+    {
+        <script src="~/js/tags/@(tag.ScriptPath).js"></script>
+    }
+}

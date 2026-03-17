@@ -1,0 +1,69 @@
+﻿@model NexusDocs.Models.PublicPageViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@Model.PageTitle - @Model.SiteTitle</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    @if (!string.IsNullOrEmpty(Model.CustomStyles))
+    {
+        <link rel="stylesheet" href="~/css/Templates/@(Model.CustomStyles).css" />
+    }
+</head>
+<body class="@Model.GlobalTheme">
+    <header>
+        @{
+        //Determine Bootstrap classes based on the theme
+        string navClass = Model.GlobalTheme == "Dark" ? "navbar-dark bg-dark" : "navbar-light bg-white";
+        if (Model.GlobalTheme == "Sepia")
+        {
+            navClass = "navbar-light theme-sepia-nav"; 
+        }
+    }
+        <nav class="navbar navbar-expand-sm @navClass border-bottom box-shadow">
+            <div class="container-fluid px-4">
+                @{
+                    var userKey = ViewContext.RouteData.Values["userKey"];
+                
+                    //Look for a page with slug "home" OR a title matching the Site Title
+                    var brandNav = Model.Navigation.FirstOrDefault(n =>
+                        n.Slug.ToLower() == "home" ||
+                        n.Title.Equals(Model.SiteTitle, StringComparison.OrdinalIgnoreCase));
+
+                    //Determine link destination
+                    var brandHref = brandNav != null ? $"/{userKey}/{brandNav.Slug}" : "#";
+                }
+
+                @* Site Name acts as the Home link *@
+                <a class="navbar-brand" href="@brandHref">@Model.SiteTitle</a>
+
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        @* Ensure brandpage is listed only once *@
+                        @foreach (var nav in Model.Navigation.Where(n => n != brandNav))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(nav.IsActive ? "active font-weight-bold" : "")"
+                                       href="/@userKey/@nav.Slug">
+                                    @nav.Title
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container-fluid px-1">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,38 @@
+﻿@model IEnumerable<NexusDocs.Models.SiteEntity>
+
+@{
+    ViewData["Title"] = "My Sites";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>My Sites</h1>
+    <a asp-action="Create" class="btn btn-primary">Create New Site</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        You haven't created any sites yet. Click "Create New Site" to get started!
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var site in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@site.SiteTitle</h5>
+                        <p class="card-text text-muted">Theme: @site.GlobalTheme</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0 d-flex justify-content-between">
+                        <a asp-controller="PageManagement" asp-action="Index" asp-route-siteId="@site.SiteEntityId" class="btn btn-outline-primary">
+                            Manage Pages
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

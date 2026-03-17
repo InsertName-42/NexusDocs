@@ -1,0 +1,26 @@
+﻿@model NexusDocs.Models.PublicPageViewModel
+@using System.Text.RegularExpressions
+@{
+    var imgTagMatch = Regex.Match(Model.Content ?? "", "<img.+?src=[\"'](.+?)[\"'].*?>", RegexOptions.IgnoreCase);
+    var imgUrlMatch = Regex.Match(Model.Content ?? "", @"(https?://\S+\.(?:jpg|jpeg|png|gif|webp|svg))", RegexOptions.IgnoreCase);
+
+    string heroImageUrl = imgTagMatch.Success ? imgTagMatch.Groups[1].Value : (imgUrlMatch.Success ? imgUrlMatch.Groups[1].Value : "");
+}
+
+<article class="page-content">
+    <partial name="_PageTags" model='(Model, "Top")' />
+    <div class="image-template-container">
+        <h1>@Model.PageTitle</h1>
+        @if (!string.IsNullOrEmpty(heroImageUrl))
+        {
+            <div class="hero-image-wrapper">
+                <img src="@heroImageUrl" alt="@Model.PageTitle" class="hero-image" />
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info mt-4">No image found in document.</div>
+        }
+    </div>
+    <partial name="_PageTags" model='(Model, "Bottom")' />
+</article>
